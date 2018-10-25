@@ -18,13 +18,18 @@ public class Main
     	session.addHeaderValue("connection", "close");
     	session.addMethodHeader(HttpMethod.POST, "Content-Type", "application/json");
     	
+    	JsonMapper mapper = new JsonMapper();
+    	mapper.putString("email", email);
+    	mapper.putString("password", password);
+    	mapper.putString("grant_type", "password");
+    	
+    	session.send(mapper.toString());
+    	
 	    System.out.println(session.getLastResponse().getJson());
 	    
     	session.addHeaderValue("authorization", "bearer 3f02f47ec0fab748f2ad16ddcf400fa1efe95481db336a6e5ba40268a30a3ce4");
     	session.setHeaderPath("/api/v1/crawl_sessions/1");
     	session.send("");
-	    
-    	JsonMap map = new JsonMap("{\"access_token\":\"c32b2d58a7d6a367224cce114b1ab6a2a369a5c90c33585b7d59f16101165795\",\"token_type\":\"Bearer\",\"expires_in\":7200,\"created_at\":1540489963}");
 	    
     	session.setHeaderPath("/api/v1/beets/1");
     	session.send();
