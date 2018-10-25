@@ -1,4 +1,4 @@
-package cis.uab.edu.Request;
+package cis.uab.edu.Http;
 
 /**
  * Used to match lines received back from HTTP Request for processing
@@ -35,6 +35,11 @@ public abstract class HttpLineMatcher
 				onMatchLambda.onMatch(line);
 			}
 		};
+	}
+	
+	public static HttpLineMatcher jsonMatcher(LineMatch onMatch)
+	{
+		return HttpLineMatcher.regexMatcher("\\{.+\\}", onMatch);
 	}
 	
 	/**

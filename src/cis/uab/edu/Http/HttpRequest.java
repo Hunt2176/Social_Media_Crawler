@@ -1,4 +1,4 @@
-package cis.uab.edu.Request;
+package cis.uab.edu.Http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,6 +13,15 @@ import java.util.Arrays;
  */
 public class HttpRequest
 {
+	
+	public static HttpRequest createWithReadingThread(Socket socket, HttpHeader header, HttpLineMatcher... matchers)
+	{
+		HttpRequest request = new HttpRequest(socket, header, matchers);
+		request.readerThread = new Thread(() -> request.readReader(true));
+		request.readerThread.start();
+		return request;
+	}
+	
 	private HttpHeader header;
 	private Socket socket;
 	private PrintWriter writer;
@@ -136,6 +145,12 @@ public class HttpRequest
 		}
 	}
 	
+	
+	public void replaceHttpHeader(HttpHeader header)
+	{
+		this.header = header;
+	}
+	
 	/**
 	 * Debug method. Same as the sendWithBody method but just prints the PrintWriter to the console
 	 * instead of sending. Can be used to verify the Request is formatted correctly.
@@ -147,22 +162,40 @@ public class HttpRequest
 		sendWithBody(body);
 	}
 	
-	public String dumpRequestToString(String body)
+	public String getResponse()
 	{
-		if (body.length() > 0) header.addHeader("Content-Length: " + body.length());
+		return this.response;
+	}
+	
+	public String requestToString(String body)
+	{
+		if (body != null && body.length() > 0) header.addHeader("Content-Length: " + body.length());
 		return header.getHttpHeader() + body;
 	}
 	
+	
+	/**
+	 * Sets the request to print out the response received once the socket is closed
+	 */
 	public void printResponseOnceRead()
 	{
 		printResponse = true;
 	}
 	
-	public void addHeader(String newHeader)
+	/**
+	 * Adds a header value to the contained HttpHeader
+	 * @param key Header name
+	 * @param value Header value
+	 */
+	public void addHeaderValue(String key, String value)
 	{
-		header.addHeader(newHeader);
+		header.addHeader(key + ": " + value);
 	}
 	
+	/**
+	 * Gets the Socket address and port for HTTP 1.1 use
+	 * @return Socket connect info formatted for HTTP 1.1
+	 */
 	public String socketHttpHost()
 	{
 		return socket.getInetAddress().getCanonicalHostName() + ":" + socket.getPort();

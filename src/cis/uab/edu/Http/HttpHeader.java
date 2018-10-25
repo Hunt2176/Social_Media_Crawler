@@ -1,4 +1,4 @@
-package cis.uab.edu.Request;
+package cis.uab.edu.Http;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,4 +1,4 @@
-package cis.uab.edu.Request;
+package cis.uab.edu.Http;
 
 /**
  * Interface to be used for lambda arguments into HttpLineMatcher
