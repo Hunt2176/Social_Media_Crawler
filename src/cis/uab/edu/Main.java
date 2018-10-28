@@ -110,21 +110,9 @@ public class Main
     
     static void challenge() throws Exception
     {
-    	
     	session.printResponse(true);
     	session.setHeaderPath("/api/v1/challenges/");
     	session.send();
-    	int count = -1;
-    	System.out.println(count);
-    	session.send("{\"distance\":" + count + "}");
-    	while (session.getLastResponse().getJson().contains("\"failure\""))
-	    {
-	    	if (count == -1) count = 1;
-		    System.out.println(count);
-	    	session.send("{\"distance\":" + count + "}");
-	    	count += 1;
-	    }
-    	session.printResponse(false);
     }
     
 }
