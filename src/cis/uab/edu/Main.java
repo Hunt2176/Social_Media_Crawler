@@ -113,6 +113,14 @@ public class Main
     	session.printResponse(true);
     	session.setHeaderPath("/api/v1/challenges/");
     	session.send();
+    	if (session.getLastResponse().getJson() != null)
+	    {
+	    	String json = session.getLastResponse().getJson();
+	    	json = json.split("\"to\":")[1];
+	    	String to = json.split(",")[0];
+	    	String from = json.split("\"from\":")[1].split(",")[0];
+	    	System.out.println("to: " + to + ", from: " + from);
+	    }
     }
     
 }
