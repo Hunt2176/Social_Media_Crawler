@@ -28,6 +28,7 @@ public class HttpResponse
 			if (line.isEmpty()) break;
 			headers.add(line);
 		}
+		if (responseCode > 399) return;
 		this.headers = headers.toArray(this.headers);
 		body = Arrays.copyOfRange(lines, lastprocessed + 1, lines.length);
 		for (String i: body)
