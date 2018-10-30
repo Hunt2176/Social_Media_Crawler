@@ -13,11 +13,9 @@ public class Profiles {
 	//Final distance to source profile
 	private int FinalDistance;
 	//path to profile tree root
-	private ArrayList<Profiles> Path;
+	private ArrayList<Profiles> ShortestPath;
 	
-	Profiles() {
-		
-	}
+	Profiles() {}
 	
 	Profiles(int id) {
 		ID = id;
@@ -35,28 +33,29 @@ public class Profiles {
 		public String toString() {
 			return "Profile " + ID + " is " + FinalDistance + " from the source profile.";
 		}
-		
-		void addFriend(Profiles idOfFriend)
+	
+	public void addFriend(Profiles idOfFriend)
 		{
 			Friends.add(idOfFriend);
 		}
-		
-		int getWeight() {
+	
+	public int getWeight() {
 			return Weight;
 		}
-		
-		void setWeight(int w) {
+	
+	public void setWeight(int w) {
 			Weight = w;
 		}
-		 
-		int getID() {
+	
+	public int getID() {
 			return ID;
 		}
-		
-		void setID(int num) {
+	
+	public void setID(int num) {
 			ID = num;
 		}
-		ArrayList<Profiles> getFriends() {
+		
+	public ArrayList<Profiles> getFriends() {
 			return Friends;
 		}
 
@@ -88,12 +87,12 @@ public class Profiles {
 			Distance = distance;
 		}
 
-		public ArrayList<Profiles> getPath() {
-			return Path;
+		public ArrayList<Profiles> getShortestPath() {
+			return ShortestPath;
 		}
 
-		public void setPath(ArrayList<Profiles> path) {
-			Path = path;
+		public void setShortestPath(ArrayList<Profiles> path) {
+			ShortestPath = path;
 		}
 
 		public int getFinalDistance() {

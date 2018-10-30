@@ -16,8 +16,7 @@ public class Main
 	
 	static HttpSession session = new HttpSession("odin.cs.uab.edu", 3001, new HttpHeader(HttpMethod.POST, "/oauth/token"));
 	static ArrayList<String> flags = new ArrayList<>();
-	static ArrayList<String> toVisit = new ArrayList<>();
-	static ArrayList<String> visited = new ArrayList<>();
+	static IdQueue queue = new IdQueue();
 	
     public static void main(String[] args) throws Exception
     {
@@ -49,12 +48,13 @@ public class Main
     	session.send(mapper.toString());
     	
     	visit(null);
-    	while (!toVisit.isEmpty())
+    	String next = null;
+    	while ((next = queue.nextUnchecked().toString()) != null)
 	    {
-	    	String visiting = toVisit.remove(0);
-	    	visited.add(visiting);
-	    	visit(visiting);
+	    	visit(next);
+	    	queue.setToChecked(Integer.valueOf(next));
 	    }
+    	
     	
     }
     
@@ -77,6 +77,17 @@ public class Main
 	        session.send();
 	    }
 	    
+	    Profiles using;
+	    try
+	    {
+	    	if (id == null) throw new NumberFormatException();
+		    using = queue.getProfile(Integer.valueOf(id));
+		    
+	    } catch (NumberFormatException error)
+	    {
+	    	using = null;
+	    }
+	    
 	    
     	String json = session.getLastResponse().getJson();
     	json = json
@@ -87,21 +98,22 @@ public class Main
 			    .replaceAll(",", " ")
 			    .replaceAll("\"uid\":", "")
 			    .trim();
-    	Arrays.asList(json.split(" ")).forEach((line) -> {
-    		try
+    	
+    	for (String line: (json.split(" ")))
+	    {
+		    try
 		    {
-		    	Integer.valueOf(line);
-			    if (!line.isEmpty() && !visited.contains(line)) toVisit.add(line);
+			    Profiles temp = queue.add(Integer.valueOf(line));
+			    if (using != null && temp != null) using.addFriend(temp);
+			
 		    } catch (NumberFormatException ignored){}
-	    });
+	    }
     }
     
     static boolean hasChallenge(String id) throws Exception
     {
 	    if (session.getLastResponse().getResponseCode() == 302)
 	    {
-		    toVisit.add(0, id);
-		    visited.remove(id);
 		    challenge();
 		    return true;
 	    }
@@ -119,8 +131,8 @@ public class Main
 	    	json = json.split("\"to\":")[1];
 	    	String to = json.split(",")[0];
 	    	String from = json.split("\"from\":")[1].split(",")[0];
-	    	System.out.println("to: " + to + ", from: " + from);
 	    }
+
     }
     
 }

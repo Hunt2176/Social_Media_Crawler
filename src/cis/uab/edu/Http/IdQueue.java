@@ -13,15 +13,15 @@ public class IdQueue
 	private HashMap<Integer, Boolean> values = new HashMap<>();
 	
 	//This ArrayList will contain all Profiles and ALL of their Info
-	private ArrayList<Profiles> ProfileList = new ArrayList<>();
+	public ArrayList<Profiles> ProfileList = new ArrayList<>();
 
-	// 2 HashMaps for Dijkstra's data *line 
+	// 2 HashMaps for Dijkstra's data *line 128
 	//ArrayList is faster**
 	private HashMap<Profiles, Integer> DistancesChecked = new HashMap<>();
 	private HashMap<Profiles, Integer> DistancesUnchecked = new HashMap<>();
 	
 	//temporary profile to add profiles and their IDs to the ProfileList
-	//*done in "add" method on line 119
+	//*done in "add" method on line 116
 	private Profiles tempProfile;
 	//private edu.uab.cs334.Profiles sourceProfile;
 	
@@ -31,7 +31,7 @@ public class IdQueue
 	 * @param idToCheck Value to check
 	 * @return If value exists
 	 */
-	Boolean contains(Integer idToCheck)
+	public Boolean contains(Integer idToCheck)
 	{
 		return (values.get(idToCheck) != null);
 	}
@@ -40,7 +40,7 @@ public class IdQueue
 	 * Returns the next value stored from the keys that has not been checked
 	 * @return Next value that has not been checked
 	 */
-	Integer nextUnchecked()
+	public Integer nextUnchecked()
 	{
 		for (Integer key: values.keySet())
 		{
@@ -53,7 +53,7 @@ public class IdQueue
 	 * Runs through amount of values whose value has not been set to checked
 	 * @return Number of remaining values
 	 */
-	Integer remainingUnchecked()
+	public Integer remainingUnchecked()
 	{
 		Integer toReturn = 0;
 		for (Integer value: values.keySet())
@@ -68,7 +68,7 @@ public class IdQueue
 	 * Total stored number of keys
 	 * @return Total number of keys
 	 */
-	Integer totalCount()
+	public Integer totalCount()
 	{
 		return values.keySet().size();
 	}
@@ -77,7 +77,7 @@ public class IdQueue
 	 * Checks if there is still a value that is not marked as checked
 	 * @return If a value still exists that is unchecked
 	 */
-	Boolean hasUncheckedValues()
+	public Boolean hasUncheckedValues()
 	{
 		for (Integer key: values.keySet())
 		{
@@ -91,7 +91,7 @@ public class IdQueue
 	 * @param id value ID to check
 	 * @return If the change was successful
 	 */
-	Boolean setToChecked(Integer id)
+	public Boolean setToChecked(Integer id)
 	{
 		if (!contains(id)) return false;
 		values.put(id, true);
@@ -103,11 +103,11 @@ public class IdQueue
 	 * @param id Value ID to set
 	 * @return If adding was successful
 	 */
-	Boolean add(Integer id)
+	public Profiles add(Integer id)
 	{
 		if (id == null)
 		{
-			return false;
+			return null;
 		}
 		else if (!contains(id))
 		{
@@ -120,12 +120,22 @@ public class IdQueue
 			tempProfile.setID(id);
 			ProfileList.add(tempProfile);
 			
-			return true;
+			return tempProfile;
 		}
-		return false;
+		return null;
 	}
 	
-	void Dijkstra(Profiles source) {
+	public Profiles getProfile(Integer id)
+	{
+		if (id == null) return null;
+		for (Profiles profile: ProfileList)
+		{
+			if (profile.getID() == id) return profile;
+		}
+		return null;
+	}
+	
+	public void Dijkstra(Profiles source) {
 	//void Dijkstra(HashMap map, edu.uab.cs334.Profiles source) {
 
 		//set the Distance values in the DistancesChecked HashMap to null (*or whatever value that shows the distance is undetermined. ex: -1, Undefined, infinite, etc)
@@ -198,6 +208,17 @@ public class IdQueue
 					//this becomes the new closest profile
 					minProfile = tempFriends.get(j);
 				}			
+				
+				//now we will add the profile whose friends we are currently checking AND all of the Profiles from its ShortestPath Array
+				//to each of their ShortestPath arrays to document their shortest paths to the source profile
+				
+				//add tempProfile's ShortestPath Profiles
+				for (int l=0; l<tempProfile.getShortestPath().size(); l++) {
+					tempFriends.get(j).getShortestPath().add(tempProfile.getShortestPath().get(l));
+				}
+				
+				//now add the tempProfile itself
+				tempFriends.get(j).getShortestPath().add(tempProfile);
 				
 				//add the now checked profile to the DistancesChecked HashMap and remove it from DistancesUnchecked
 				//DistancesChecked.put(tempProfile.getFriends().get(j), distanceToSource);
