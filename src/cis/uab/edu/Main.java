@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 
 public class Main
 {
-	final static String email = "lforbus@uab.edu";
-	final static String password = "w7BR2PgZ";
+	static String email = "lforbus@uab.edu";
+	static String password = "w7BR2PgZ";
 	
 	static HttpSession session = new HttpSession("odin.cs.uab.edu", 3001, new HttpHeader(HttpMethod.POST, "/oauth/token"));
 	static ArrayList<String> flags = new ArrayList<>();
@@ -20,6 +20,8 @@ public class Main
 	
     public static void main(String[] args) throws Exception
     {
+    	
+    	
     	
     	session.addHeaderValue("accept", "application/json");
     	session.addHeaderValue("connection", "close");
@@ -132,17 +134,27 @@ public class Main
 	    	json = json.split("\"to\":")[1];
 	    	try
 		    {
-			    Integer to = Integer.valueOf(json.split(",")[0]);
-			    Integer from = Integer.valueOf(json.split("\"from\":")[1].split(",")[0]);
+			    Profiles to = queue.getProfile(Integer.valueOf(json.split(",")[0]));
+			    Profiles from = queue.getProfile(Integer.valueOf(json.split("\"from\":")[1].split(",")[0]));
 			    JsonMapper mapper = new JsonMapper();
 			    PathFinder finder = new PathFinder();
-			    int count = finder.count(to, from, queue);
-			    mapper.putInt("distance", count);
+			    
+			    int result;
+			    if (to == null || from == null)
+			    {
+			    	result = -1;
+			    }
+			    else
+			    {
+			    	result = queue.Dijkstra(from, to);
+			    }
+			    mapper.putInt("distance", result);
+			    
 			    session.send(mapper.toString());
 			    if (session.getLastResponse().getJson().contains("failure"))
 			    {
 			    	int actual = challengeBruteForce((Integer) mapper.map.get("distance"));
-				    System.out.println("Result Found: Tested: " + count + " - Actual: " + actual + "\n");
+				    System.out.println("Result Found: Tested: " + -1 + " - Actual: " + actual + "\n");
 			    }
 			    
 		    } catch (NumberFormatException error)

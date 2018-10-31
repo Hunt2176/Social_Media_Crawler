@@ -9,7 +9,7 @@ public class Profiles {
 	private boolean Checked = false;
 	private String Name = "";
 	//distance between Profiles
-	private int Distance = 0;
+	private int Distance = 1;
 	//Final distance to source profile
 	private int FinalDistance = 0;
 	//path to profile tree root
@@ -35,7 +35,6 @@ public class Profiles {
 	
 	public void addFriend(Profiles idOfFriend)
 		{
-			
 			if (idOfFriend != null && idOfFriend.getID() != this.getID()) Friends.add(idOfFriend);
 		}
 	
