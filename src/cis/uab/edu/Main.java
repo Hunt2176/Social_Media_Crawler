@@ -2,7 +2,6 @@ package cis.uab.edu;
 import cis.uab.edu.Http.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,9 +19,6 @@ public class Main
 	
     public static void main(String[] args) throws Exception
     {
-    	
-    	
-    	
     	session.addHeaderValue("accept", "application/json");
     	session.addHeaderValue("connection", "close");
     	session.addMethodHeader(HttpMethod.POST, "Content-Type", "application/json");
@@ -56,8 +52,6 @@ public class Main
 	    	visit(next.toString());
 	    	queue.setToChecked(next);
 	    }
-    	
-    	
     }
     
     static void visit(String id) throws Exception
@@ -79,7 +73,7 @@ public class Main
 	        session.send();
 	    }
 	    
-	    Profiles using;
+	    Profile using;
 	    try
 	    {
 	    	if (id == null) throw new NumberFormatException();
@@ -134,8 +128,8 @@ public class Main
 	    	json = json.split("\"to\":")[1];
 	    	try
 		    {
-			    Profiles to = queue.getProfile(Integer.valueOf(json.split(",")[0]));
-			    Profiles from = queue.getProfile(Integer.valueOf(json.split("\"from\":")[1].split(",")[0]));
+			    Profile to = queue.getProfile(Integer.valueOf(json.split(",")[0]));
+			    Profile from = queue.getProfile(Integer.valueOf(json.split("\"from\":")[1].split(",")[0]));
 			    JsonMapper mapper = new JsonMapper();
 			    PathFinder finder = new PathFinder();
 			    

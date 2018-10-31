@@ -2,25 +2,25 @@ package cis.uab.edu.Http;
 
 import java.util.ArrayList;
 
-public class Profiles {
+public class Profile {
 	private int Weight = 1;
 	private int ID;
-	private ArrayList<Profiles> Friends = new ArrayList<>();
+	private ArrayList<Profile> Friends = new ArrayList<>();
 	private boolean Checked = false;
 	private String Name = "";
-	//distance between Profiles
+	//distance between Profile
 	private int Distance = 1;
 	//Final distance to source profile
 	private int FinalDistance = 0;
 	//path to profile tree root
-	private ArrayList<Profiles> ShortestPath = new ArrayList<>();
+	private ArrayList<Profile> ShortestPath = new ArrayList<>();
 	
-	public Profiles(int id)
+	public Profile(int id)
 	{
 		ID = id;
 	}
 
-	Profiles(String name, int id, int weight, boolean b, int dist, ArrayList<Profiles> path, ArrayList<Profiles> array){
+	Profile(String name, int id, int weight, boolean b, int dist, ArrayList<Profile> path, ArrayList<Profile> array){
 		setName(name);
 		Weight = weight;
 		ID = id;
@@ -33,7 +33,7 @@ public class Profiles {
 			return "Profile " + ID;
 		}
 	
-	public void addFriend(Profiles idOfFriend)
+	public void addFriend(Profile idOfFriend)
 		{
 			if (idOfFriend != null && idOfFriend.getID() != this.getID()) Friends.add(idOfFriend);
 		}
@@ -54,11 +54,11 @@ public class Profiles {
 			ID = num;
 		}
 		
-	public ArrayList<Profiles> getFriends() {
+	public ArrayList<Profile> getFriends() {
 			return Friends;
 		}
 
-		public void setFriends(ArrayList<Profiles> friends) {
+		public void setFriends(ArrayList<Profile> friends) {
 			Friends = friends;
 		}
 
@@ -86,11 +86,11 @@ public class Profiles {
 			Distance = distance;
 		}
 
-		public ArrayList<Profiles> getShortestPath() {
+		public ArrayList<Profile> getShortestPath() {
 			return ShortestPath;
 		}
 
-		public void setShortestPath(ArrayList<Profiles> path) {
+		public void setShortestPath(ArrayList<Profile> path) {
 			ShortestPath = path;
 		}
 

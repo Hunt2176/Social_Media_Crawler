@@ -1,9 +1,10 @@
 package cis.uab.edu;
 
 import cis.uab.edu.Http.IdQueue;
-import cis.uab.edu.Http.Profiles;
+import cis.uab.edu.Http.Profile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Test
 {
@@ -34,24 +35,33 @@ public class Test
 	
 	public static void main(String[] args)
 	{
-		ArrayList<Profiles> profiles = new ArrayList<>();
-		Profiles profiles1 = new Profiles(1);
-		Profiles profiles2 = new Profiles(2);
-		Profiles profiles3 = new Profiles(3);
-		Profiles profiles4 = new Profiles(4);
-		Profiles profiles5 = new Profiles(5);
-		Profiles profiles6 = new Profiles(6);
+		ArrayList<Profile> profiles = new ArrayList<>();
+		Profile profile1 = new Profile(1);
+		Profile profile2 = new Profile(2);
+		Profile profile3 = new Profile(3);
+		Profile profile4 = new Profile(4);
+		Profile profile5 = new Profile(5);
+		Profile profile6 = new Profile(6);
 		
-		profiles1.addFriend(profiles2);
-		profiles1.addFriend(profiles3);
-		profiles2.addFriend(profiles3);
-		profiles3.addFriend(profiles4);
-		profiles4.addFriend(profiles5);
-		profiles5.addFriend(profiles6);
-		
-		PathFinder pathFinder = new PathFinder();
-		boolean x = pathFinder.isFriendOf(profiles1, 6);
-		pathFinder.buildPaths(profiles1, 6);
+		profile1.addFriend(profile2);
+		profile1.addFriend(profile3);
+		profile2.addFriend(profile3);
+		profile3.addFriend(profile4);
+		profile4.addFriend(profile5);
+		profile5.addFriend(profile6);
+
+		profiles.addAll(Arrays.asList(
+				profile1,
+				profile2,
+				profile3,
+				profile4,
+				profile5,
+				profile6
+		));
+
+		IdQueue testing = new IdQueue();
+		testing.ProfileList = profiles;
+		testing.Dijkstra(testing.getProfile(1), testing.getProfile(6));
 	}
 	
 	
@@ -62,9 +72,9 @@ class PathFinder
 	private ArrayList<ArrayList<Integer>> pathsTo = new ArrayList<>();
 	private ArrayList<Integer> checked = new ArrayList<>();
 	
-	boolean isFriendOfRecursive(Profiles profile, Integer idToFind)
+	boolean isFriendOfRecursive(Profile profile, Integer idToFind)
 	{
-		for (Profiles friend: profile.getFriends())
+		for (Profile friend: profile.getFriends())
 		{
 			if (friend.getID() == idToFind) return true;
 			if (!checked.contains(friend.getID()))
@@ -77,23 +87,23 @@ class PathFinder
 		return false;
 	}
 	
-	boolean isFriendOf(Profiles profiles, Integer idToFind)
+	boolean isFriendOf(Profile profile, Integer idToFind)
 	{
 		checked = new ArrayList<>();
-		return isFriendOfRecursive(profiles, idToFind);
+		return isFriendOfRecursive(profile, idToFind);
 	}
 	
-	void buildPaths(Profiles profiles, Integer idToFind)
+	void buildPaths(Profile profile, Integer idToFind)
 	{
-		if (!isFriendOf(profiles, idToFind)) return;
+		if (!isFriendOf(profile, idToFind)) return;
 		
-		for (Profiles friend: profiles.getFriends())
+		for (Profile friend: profile.getFriends())
 		{
 			ArrayList<Integer> path = new ArrayList<>();
 			
-			Profiles next = friend;
+			Profile next = friend;
 			if (!isFriendOf(next, idToFind)) continue;
-			path.add(profiles.getID());
+			path.add(profile.getID());
 			path.add(next.getID());
 			while ((next = nextInPath(next, idToFind)) != null)
 			{
@@ -106,10 +116,10 @@ class PathFinder
 		
 	}
 	
-	Profiles nextInPath(Profiles profile, Integer idToFind)
+	Profile nextInPath(Profile profile, Integer idToFind)
 	{
 		if (profile.getID() == idToFind) return null;
-		for (Profiles friend: profile.getFriends())
+		for (Profile friend: profile.getFriends())
 		{
 			if (isFriendOf(friend, idToFind)) return friend;
 		}
@@ -118,8 +128,8 @@ class PathFinder
 	
 	int count(int to, int from, IdQueue fromQueue)
 	{
-		Profiles toNode = fromQueue.getProfile(to);
-		Profiles fromNode = fromQueue.getProfile(from);
+		Profile toNode = fromQueue.getProfile(to);
+		Profile fromNode = fromQueue.getProfile(from);
 		
 		if (toNode == null || fromNode == null) return -1;
 		if (!isFriendOf(fromNode, toNode.getID())) return -1;
