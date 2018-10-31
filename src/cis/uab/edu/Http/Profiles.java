@@ -3,21 +3,20 @@ package cis.uab.edu.Http;
 import java.util.ArrayList;
 
 public class Profiles {
-	private int Weight;
+	private int Weight = 1;
 	private int ID;
-	private ArrayList<Profiles> Friends;
-	private boolean Checked;
-	private String Name;
+	private ArrayList<Profiles> Friends = new ArrayList<>();
+	private boolean Checked = false;
+	private String Name = "";
 	//distance between Profiles
-	private int Distance;
+	private int Distance = 0;
 	//Final distance to source profile
-	private int FinalDistance;
+	private int FinalDistance = 0;
 	//path to profile tree root
-	private ArrayList<Profiles> ShortestPath;
+	private ArrayList<Profiles> ShortestPath = new ArrayList<>();
 	
-	Profiles() {}
-	
-	Profiles(int id) {
+	public Profiles(int id)
+	{
 		ID = id;
 	}
 
@@ -31,12 +30,13 @@ public class Profiles {
 		
 		//finish
 		public String toString() {
-			return "Profile " + ID + " is " + FinalDistance + " from the source profile.";
+			return "Profile " + ID;
 		}
 	
 	public void addFriend(Profiles idOfFriend)
 		{
-			Friends.add(idOfFriend);
+			
+			if (idOfFriend != null && idOfFriend.getID() != this.getID()) Friends.add(idOfFriend);
 		}
 	
 	public int getWeight() {

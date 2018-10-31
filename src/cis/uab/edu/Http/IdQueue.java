@@ -98,6 +98,12 @@ public class IdQueue
 		return true;
 	}
 	
+	public void setToUnchecked(Integer id)
+	{
+		if (!contains(id)) return;
+		values.put(id, false);
+	}
+	
 	/**
 	 * Adds the value to the queue and sets it as unchecked
 	 * @param id Value ID to set
@@ -115,9 +121,8 @@ public class IdQueue
 			
 			//creates new profile from new ID and adds it 
 			//to general Profile Info Array
-			tempProfile = new Profiles();
 			//add all of the ID values to a profile in the ProfileList
-			tempProfile.setID(id);
+			tempProfile = new Profiles(id);
 			ProfileList.add(tempProfile);
 			
 			return tempProfile;

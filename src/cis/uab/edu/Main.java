@@ -48,11 +48,11 @@ public class Main
     	session.send(mapper.toString());
     	
     	visit(null);
-    	String next = null;
-    	while ((next = queue.nextUnchecked().toString()) != null)
+    	Integer next = null;
+    	while ((next = queue.nextUnchecked()) != null)
 	    {
-	    	visit(next);
-	    	queue.setToChecked(Integer.valueOf(next));
+	    	visit(next.toString());
+	    	queue.setToChecked(next);
 	    }
     	
     	
@@ -103,8 +103,8 @@ public class Main
 	    {
 		    try
 		    {
-			    Profiles temp = queue.add(Integer.valueOf(line));
-			    if (using != null && temp != null) using.addFriend(temp);
+			    queue.add(Integer.valueOf(line));
+			    if (using != null) using.addFriend(queue.getProfile(Integer.valueOf(line)));
 			
 		    } catch (NumberFormatException ignored){}
 	    }
@@ -115,6 +115,7 @@ public class Main
 	    if (session.getLastResponse().getResponseCode() == 302)
 	    {
 		    challenge();
+		    queue.setToUnchecked(Integer.valueOf(id));
 		    return true;
 	    }
 	    return false;
@@ -129,10 +130,48 @@ public class Main
 	    {
 	    	String json = session.getLastResponse().getJson();
 	    	json = json.split("\"to\":")[1];
-	    	String to = json.split(",")[0];
-	    	String from = json.split("\"from\":")[1].split(",")[0];
+	    	try
+		    {
+			    Integer to = Integer.valueOf(json.split(",")[0]);
+			    Integer from = Integer.valueOf(json.split("\"from\":")[1].split(",")[0]);
+			    JsonMapper mapper = new JsonMapper();
+			    PathFinder finder = new PathFinder();
+			    int count = finder.count(to, from, queue);
+			    mapper.putInt("distance", count);
+			    session.send(mapper.toString());
+			    if (session.getLastResponse().getJson().contains("failure"))
+			    {
+			    	int actual = challengeBruteForce((Integer) mapper.map.get("distance"));
+				    System.out.println("Result Found: Tested: " + count + " - Actual: " + actual + "\n");
+			    }
+			    
+		    } catch (NumberFormatException error)
+		    {
+		    	throw error;
+		    }
+		    session.printResponse(false);
+	    	
 	    }
 
+    }
+    
+    static int challengeBruteForce(int original) throws Exception
+    {
+        session.printResponse(false);
+        int count = -1;
+        while (session.getLastResponse().getJson() != null && session.getLastResponse().getJson().contains("failure"))
+        {
+        	JsonMapper mapper = new JsonMapper();
+        	mapper.putInt("Distance", count);
+        	session.send("{\"distance\": " + count + "}");
+        	if (session.getLastResponse().getJson().contains("failure"))
+	        {
+		        count = (count == -1) ? 1 : count + 1;
+	        }
+        	
+        }
+        
+        return count;
     }
     
 }
