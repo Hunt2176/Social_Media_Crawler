@@ -81,7 +81,9 @@ public class Profiles {
 		public int getDistance() {
 			return Distance;
 		}
-
+		
+		public void addProfile(Profiles prof){ ShortestPath.add(prof);}
+		
 		public void setDistance(int distance) {
 			Distance = distance;
 		}
@@ -101,4 +103,6 @@ public class Profiles {
 		public void setFinalDistance(int finalDistance) {
 			FinalDistance = finalDistance;
 		}
+		
+		public void calculateFinalDistance() {this.setFinalDistance(ShortestPath.size());}
 }

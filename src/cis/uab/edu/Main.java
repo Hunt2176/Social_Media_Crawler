@@ -42,11 +42,12 @@ public class Main
     		
 	    }));
     	
+    	
     	JsonMapper mapper = new JsonMapper();
     	mapper.putString("email", email);
     	mapper.putString("password", password);
     	mapper.putString("grant_type", "password");
-    	
+	
     	session.send(mapper.toString());
     	
     	visit(null);

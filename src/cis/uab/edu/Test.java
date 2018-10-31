@@ -4,6 +4,7 @@ import cis.uab.edu.Http.IdQueue;
 import cis.uab.edu.Http.Profiles;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Test
 {
@@ -49,9 +50,17 @@ public class Test
 		profiles4.addFriend(profiles5);
 		profiles5.addFriend(profiles6);
 		
-		PathFinder pathFinder = new PathFinder();
-		boolean x = pathFinder.isFriendOf(profiles1, 6);
-		pathFinder.buildPaths(profiles1, 6);
+		IdQueue testing = new IdQueue();
+		testing.ProfileList.addAll(Arrays.asList(
+				profiles1,
+				profiles2,
+				profiles3,
+				profiles4,
+				profiles5,
+				profiles6
+		));
+		int x = testing.Dijkstra(profiles1, profiles6);
+		System.out.println(x);
 	}
 	
 	
