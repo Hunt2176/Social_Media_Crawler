@@ -61,7 +61,7 @@ public class Test
 		));
 		
 		IdQueue testing = new IdQueue();
-		testing.ProfileList = profiles;
+		testing.profileList = profiles;
 		testing.Dijkstra(testing.getProfile(1), testing.getProfile(6));
 	}
 	

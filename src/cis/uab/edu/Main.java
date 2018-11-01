@@ -13,6 +13,7 @@ public class Main
 {
 	static String email = "lforbus@uab.edu";
 	static String password = "w7BR2PgZ";
+	static Integer graphID = 1;
 	
 	static HttpSession session = new HttpSession("odin.cs.uab.edu", 3001, new HttpHeader(HttpMethod.POST, "/oauth/token"));
 	static ArrayList<String> flags = new ArrayList<>();
@@ -55,6 +56,8 @@ public class Main
 			visit(next.toString());
 			queue.setToChecked(next);
 		}
+		System.out.println("\nFlags:");
+		flags.forEach(System.out::println);
 	}
 	
 	static void visit(String id) throws Exception
@@ -69,7 +72,7 @@ public class Main
 			if (hasChallenge(id)) return;
 		} else
 		{
-			session.setHeaderPath("/api/v1/crawl_sessions/2");
+			session.setHeaderPath("/api/v1/crawl_sessions/" + graphID);
 			session.send("");
 			session.setHeaderPath("/api/v1/graphs/random_people");
 			session.send();

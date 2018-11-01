@@ -2,7 +2,6 @@ package cis.uab.edu.Http;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.PriorityQueue;
 
 /**
  * Used to hold IDs and their checked status for crawling
@@ -14,14 +13,14 @@ public class IdQueue
 	private HashMap<Integer, Boolean> values = new HashMap<>();
 	
 	//This ArrayList will contain all Profile and ALL of their Info
-	public ArrayList<Profile> ProfileList = new ArrayList<>();
+	public ArrayList<Profile> profileList = new ArrayList<>();
 	
 	// 2 HashMaps for Dijkstra's data *line 128
 	//ArrayList is faster**
 	private HashMap<Profile, Integer> DistancesChecked = new HashMap<>();
 	private HashMap<Profile, Integer> DistancesUnchecked = new HashMap<>();
 	
-	//temporary profile to add profiles and their IDs to the ProfileList
+	//temporary profile to add profiles and their IDs to the profileList
 	//*done in "add" method on line 116
 	private Profile tempProfile;
 	//private edu.uab.cs334.Profile sourceProfile;
@@ -128,9 +127,9 @@ public class IdQueue
 			
 			//creates new profile from new ID and adds it
 			//to general Profile Info Array
-			//add all of the ID values to a profile in the ProfileList
+			//add all of the ID values to a profile in the profileList
 			tempProfile = new Profile(id);
-			ProfileList.add(tempProfile);
+			profileList.add(tempProfile);
 			
 			return tempProfile;
 		}
@@ -140,94 +139,31 @@ public class IdQueue
 	public Profile getProfile(Integer id)
 	{
 		if (id == null) return null;
-		for (Profile profile : ProfileList)
+		for (Profile profile : profileList)
 		{
 			if (profile.getID() == id) return profile;
 		}
 		return null;
 	}
 	
-	class Node
-	{
-		ArrayList<Node> parents = new ArrayList<>();
-		ArrayList<Node> children = new ArrayList<>();
-		String name = "Profile";
-		Integer id;
-		Integer distance = Integer.MAX_VALUE;
-		
-		Node(int id)
-		{
-			this.name = this.name + " " + id;
-			this.id = id;
-		}
-		
-		Node(Profile profile)
-		{
-			this.name = this.name + " " + profile.getID();
-			this.id = profile.getID();
-		}
-		
-		@Override
-		public String toString()
-		{
-			return this.name;
-		}
-	}
-	
 	public int Dijkstra(Profile from, Profile to)
 	{
 		//Scott attempt
-		PriorityQueue<Profile> profileQueue = new PriorityQueue<>((Profile a, Profile b) -> Integer.compare(a.getDistance(), b.getDistance()));
-		HashMap<Node, Integer> dist = new HashMap<>();
-		HashMap<Node, Node> path = new HashMap<>();
+		HashMap<Profile, Integer> dist = new HashMap<>();
+		HashMap<Profile, Profile> path = new HashMap<>();
+		ArrayList<Profile> queue = new ArrayList<>();
 		
-		HashMap<Integer, Node> nodeMap = new HashMap<>();
-		
-		Profile current;
-		int index = 0;
-		Node root = null;
-		while (index < ProfileList.size())
-		{
-			current = ProfileList.get(index);
-			Node currentNode = nodeMap.get(current.getID());
-			
-			if (currentNode == null)
-			{
-				nodeMap.put(current.getID(), new Node(current));
-				currentNode = nodeMap.get(current.getID());
-			}
-			if (current == from)
-			{
-				currentNode.distance = 0;
-				root = currentNode;
-			}
-			
-			for (Profile friend : current.getFriends())
-			{
-				Node childNode = nodeMap.get(friend.getID());
-				if (childNode == null)
-				{
-					childNode = new Node(friend.getID());
-					nodeMap.put(friend.getID(), childNode);
-				}
-				childNode.parents.add(nodeMap.get(current.getID()));
-				nodeMap.get(current.getID()).children.add(childNode);
-			}
-			index += 1;
-		}
-		
-		ArrayList<Node> queue = new ArrayList<>();
-		for (Node node : nodeMap.values())
+		for (Profile node : profileList)
 		{
 			queue.add(node);
-			dist.put(node, node.distance);
+			dist.put(node, (node.equals(from))? 0 : Integer.MAX_VALUE);
 			path.put(node, null);
 		}
 		
 		while (queue.size() > 0)
 		{
-			Node using = null;
-			for (Node value : queue)
+			Profile using = null;
+			for (Profile value : queue)
 			{
 				if (using == null || dist.get(value) < dist.get(using))
 				{
@@ -237,7 +173,7 @@ public class IdQueue
 			
 			queue.remove(using);
 			
-			for (Node child : using.children)
+			for (Profile child : using.getFriends())
 			{
 				if (!queue.contains(child)) continue;
 				long b = (dist.get(using).longValue() - dist.get(child).longValue());
@@ -249,7 +185,7 @@ public class IdQueue
 				}
 			}
 		}
-		Node next = nodeMap.get(to.getID());
+		Profile next = getProfile(to.getID());
 		while (next != null)
 		{
 			queue.add(next);
