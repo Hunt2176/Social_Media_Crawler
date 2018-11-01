@@ -15,7 +15,7 @@ public class IdQueue
 	
 	//This ArrayList will contain all Profile and ALL of their Info
 	public ArrayList<Profile> ProfileList = new ArrayList<>();
-
+	
 	// 2 HashMaps for Dijkstra's data *line 128
 	//ArrayList is faster**
 	private HashMap<Profile, Integer> DistancesChecked = new HashMap<>();
@@ -29,6 +29,7 @@ public class IdQueue
 	
 	/**
 	 * Checks if the value passed is stored within the values
+	 *
 	 * @param idToCheck Value to check
 	 * @return If value exists
 	 */
@@ -39,11 +40,12 @@ public class IdQueue
 	
 	/**
 	 * Returns the next value stored from the keys that has not been checked
+	 *
 	 * @return Next value that has not been checked
 	 */
 	public Integer nextUnchecked()
 	{
-		for (Integer key: values.keySet())
+		for (Integer key : values.keySet())
 		{
 			if (values.get(key).equals(false)) return key;
 		}
@@ -52,12 +54,13 @@ public class IdQueue
 	
 	/**
 	 * Runs through amount of values whose value has not been set to checked
+	 *
 	 * @return Number of remaining values
 	 */
 	public Integer remainingUnchecked()
 	{
 		Integer toReturn = 0;
-		for (Integer value: values.keySet())
+		for (Integer value : values.keySet())
 		{
 			if (!values.get(value)) ++toReturn;
 		}
@@ -67,6 +70,7 @@ public class IdQueue
 	
 	/**
 	 * Total stored number of keys
+	 *
 	 * @return Total number of keys
 	 */
 	public Integer totalCount()
@@ -76,11 +80,12 @@ public class IdQueue
 	
 	/**
 	 * Checks if there is still a value that is not marked as checked
+	 *
 	 * @return If a value still exists that is unchecked
 	 */
 	public Boolean hasUncheckedValues()
 	{
-		for (Integer key: values.keySet())
+		for (Integer key : values.keySet())
 		{
 			if (values.get(key).equals(false)) return true;
 		}
@@ -89,6 +94,7 @@ public class IdQueue
 	
 	/**
 	 * Sets value ID passed in to having been checked
+	 *
 	 * @param id value ID to check
 	 * @return If the change was successful
 	 */
@@ -107,6 +113,7 @@ public class IdQueue
 	
 	/**
 	 * Adds the value to the queue and sets it as unchecked
+	 *
 	 * @param id Value ID to set
 	 * @return If adding was successful
 	 */
@@ -115,8 +122,7 @@ public class IdQueue
 		if (id == null)
 		{
 			return null;
-		}
-		else if (!contains(id))
+		} else if (!contains(id))
 		{
 			values.put(id, false);
 			
@@ -134,87 +140,73 @@ public class IdQueue
 	public Profile getProfile(Integer id)
 	{
 		if (id == null) return null;
-		for (Profile profile: ProfileList)
+		for (Profile profile : ProfileList)
 		{
 			if (profile.getID() == id) return profile;
 		}
 		return null;
 	}
-
+	
 	class Node
 	{
 		ArrayList<Node> parents = new ArrayList<>();
 		ArrayList<Node> children = new ArrayList<>();
 		String name = "Profile";
 		Integer id;
-		Integer distance = Integer.MIN_VALUE;
+		Integer distance = Integer.MAX_VALUE;
+		
 		Node(int id)
 		{
 			this.name = this.name + " " + id;
 			this.id = id;
 		}
-
+		
 		Node(Profile profile)
 		{
 			this.name = this.name + " " + profile.getID();
 			this.id = profile.getID();
 		}
-
+		
 		@Override
-		public String toString() {
+		public String toString()
+		{
 			return this.name;
 		}
 	}
 	
-	public int Dijkstra(Profile from, Profile to) {
-
-
+	public int Dijkstra(Profile from, Profile to)
+	{
 		//Scott attempt
-
 		PriorityQueue<Profile> profileQueue = new PriorityQueue<>((Profile a, Profile b) -> Integer.compare(a.getDistance(), b.getDistance()));
-		HashMap<Profile, Profile> dist = new HashMap<>();
-		HashMap<Profile, Profile> path = new HashMap<>();
-
-//		for (int i = 0; i < ProfileList.size(); i++) {
-//			Profile p = ProfileList.get(i);
-//			if (p == from) {
-//				p.setDistance(0);
-//			} else {
-//				p.setDistance(Integer.MAX_VALUE);
-//			}
-//			profileQueue.add(p);
-//		}
-//		Profile current;
-//		ArrayList<Profile> friendQueue = new ArrayList();
-//		while((current = profileQueue.poll()) != null){
-//			current.getFriends().forEach((friend) -> {
-//				if (!friendQueue.contains(friend)) friendQueue.add(friend);
-//			});
-//			for(Profile profile: friendQueue){
-//
-//			}
-//			friendQueue.forEach(profileQueue::remove);
-//			profileQueue.addAll(friendQueue);
-//			friendQueue.clear();
-//		}
+		HashMap<Node, Integer> dist = new HashMap<>();
+		HashMap<Node, Node> path = new HashMap<>();
+		
 		HashMap<Integer, Node> nodeMap = new HashMap<>();
-		HashMap<Node, Boolean> checkedMap = new HashMap<>();
+		
 		Profile current;
 		int index = 0;
-		while (index < ProfileList.size()) {
+		Node root = null;
+		while (index < ProfileList.size())
+		{
 			current = ProfileList.get(index);
 			Node currentNode = nodeMap.get(current.getID());
-
+			
 			if (currentNode == null)
 			{
 				nodeMap.put(current.getID(), new Node(current));
 				currentNode = nodeMap.get(current.getID());
 			}
-			if (current == from) currentNode.distance = 0;
-
-			for (Profile friend : current.getFriends()) {
+			if (current == from)
+			{
+				currentNode.distance = 0;
+				root = currentNode;
+			}
+			
+			for (Profile friend : current.getFriends())
+			{
 				Node childNode = nodeMap.get(friend.getID());
-				if (childNode == null) {
+				if (childNode == null)
+				{
 					childNode = new Node(friend.getID());
 					nodeMap.put(friend.getID(), childNode);
 				}
@@ -223,41 +215,47 @@ public class IdQueue
 			}
 			index += 1;
 		}
-		Node root = null;
-		for (Node node: nodeMap.values())
+		
+		ArrayList<Node> queue = new ArrayList<>();
+		for (Node node : nodeMap.values())
 		{
-			if (node.distance == 0) root = node;
+			queue.add(node);
+			dist.put(node, node.distance);
+			path.put(node, null);
 		}
-		nodeMap.forEach((key, value) -> checkedMap.put(value, false));
-
-		try
+		
+		while (queue.size() > 0)
 		{
-			Node using = root;
-			while (using != null)
+			Node using = null;
+			for (Node value : queue)
 			{
-				for (Node child: using.children)
+				if (using == null || dist.get(value) < dist.get(using))
 				{
-					if (!checkedMap.get(child))
-					{
-						child.distance = using.distance + 1;
-						checkedMap.put(child, true);
-					}
+					using = value;
 				}
 			}
-
-		} catch (NullPointerException error)
-		{
-			error.printStackTrace();
+			
+			queue.remove(using);
+			
+			for (Node child : using.children)
+			{
+				if (!queue.contains(child)) continue;
+				long b = (dist.get(using).longValue() - dist.get(child).longValue());
+				long alt = dist.get(child).longValue() + b;
+				if (alt < dist.get(child))
+				{
+					dist.put(child, (new Long(alt).intValue()));
+					path.put(child, using);
+				}
+			}
 		}
-
-
-
-
-
-		System.out.println("Butts");
-
-
-		return 0;
+		Node next = nodeMap.get(to.getID());
+		while (next != null)
+		{
+			queue.add(next);
+			next = path.get(next);
+		}
+		return (queue.size() - 1 == 0)? -1 : queue.size() - 1;
 		//Scott Attempt
 	}
 }

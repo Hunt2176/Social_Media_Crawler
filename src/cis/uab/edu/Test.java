@@ -49,7 +49,8 @@ public class Test
 		profile3.addFriend(profile4);
 		profile4.addFriend(profile5);
 		profile5.addFriend(profile6);
-
+		profile3.addFriend(profile6);
+		
 		profiles.addAll(Arrays.asList(
 				profile1,
 				profile2,
@@ -58,7 +59,7 @@ public class Test
 				profile5,
 				profile6
 		));
-
+		
 		IdQueue testing = new IdQueue();
 		testing.ProfileList = profiles;
 		testing.Dijkstra(testing.getProfile(1), testing.getProfile(6));
@@ -74,7 +75,7 @@ class PathFinder
 	
 	boolean isFriendOfRecursive(Profile profile, Integer idToFind)
 	{
-		for (Profile friend: profile.getFriends())
+		for (Profile friend : profile.getFriends())
 		{
 			if (friend.getID() == idToFind) return true;
 			if (!checked.contains(friend.getID()))
@@ -97,7 +98,7 @@ class PathFinder
 	{
 		if (!isFriendOf(profile, idToFind)) return;
 		
-		for (Profile friend: profile.getFriends())
+		for (Profile friend : profile.getFriends())
 		{
 			ArrayList<Integer> path = new ArrayList<>();
 			
@@ -119,7 +120,7 @@ class PathFinder
 	Profile nextInPath(Profile profile, Integer idToFind)
 	{
 		if (profile.getID() == idToFind) return null;
-		for (Profile friend: profile.getFriends())
+		for (Profile friend : profile.getFriends())
 		{
 			if (isFriendOf(friend, idToFind)) return friend;
 		}
@@ -136,10 +137,10 @@ class PathFinder
 		buildPaths(fromNode, toNode.getID());
 		
 		int toReturn = Integer.MAX_VALUE;
-		for (ArrayList paths: pathsTo)
+		for (ArrayList paths : pathsTo)
 		{
 			if (paths.size() < toReturn) toReturn = paths.size();
 		}
-		return (toReturn == Integer.MAX_VALUE)? -1 : toReturn;
+		return (toReturn == Integer.MAX_VALUE) ? -1 : toReturn;
 	}
 }
