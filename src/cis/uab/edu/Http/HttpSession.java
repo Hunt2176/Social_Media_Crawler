@@ -26,6 +26,8 @@ public class HttpSession
 	HttpRequest lastRequest = null;
 	HttpResponse lastResponse = null;
 	
+	SessionSendComplete onComplete = null;
+	
 	/**
 	 * Creates a Session with a header to start with
 	 * @param address Address to connect sockets to
@@ -89,6 +91,14 @@ public class HttpSession
 		return toReturn.toArray(new String[]{});
 	}
 	
+	private void resendLastRequest() throws Exception
+	{
+		if (this.getLastRequest() != null)
+		{
+			send(this.getLastRequest().getHttpHeader());
+		}
+	}
+	
 	/**
 	 * Adds an HttpMatcher that is applied to all HttpRequests created
 	 * @param matcher HttpMatcher to add to Request
@@ -108,6 +118,11 @@ public class HttpSession
 	public void addHeaderValue(String key, String value)
 	{
 		ArrayList<String> temp = new ArrayList<>(Arrays.asList(bothHeaders));
+		//Removes header if key already exits
+		for (String header: temp)
+		{
+			if (header.toLowerCase().contains((key + ": ").toLowerCase())) temp.remove(header);
+		}
 		temp.add(key + ": " + value);
 		bothHeaders = temp.toArray(bothHeaders);
 		if (header != null) header.addHeader(key + ": " + value);
@@ -126,11 +141,19 @@ public class HttpSession
 		{
 			case GET:
 				headers = new ArrayList<>(Arrays.asList(getHeaders));
+				for (String header: headers)
+				{
+					if (header.toLowerCase().contains((key + ": ").toLowerCase())) headers.remove(header);
+				}
 				headers.add(key + ": " + value);
 				getHeaders = headers.toArray(getHeaders);
 				break;
 			case POST:
 				headers = new ArrayList<>(Arrays.asList(postHeaders));
+				for (String header: headers)
+				{
+					if (header.toLowerCase().contains((key + ": ").toLowerCase())) headers.remove(header);
+				}
 				headers.add(key + ": " + value);
 				postHeaders = headers.toArray(postHeaders);
 				break;
@@ -176,6 +199,7 @@ public class HttpSession
 		HttpHeader using = (header == null) ? new HttpHeader(HttpMethod.GET, headerPath, createHeaderValues(HttpMethod.GET)) : header;
 		createRequest(using).send();
 		this.lastResponse = new HttpResponse(this.lastRequest.getResponse());
+		onSendComplete();
 	}
 	
 	/**
@@ -188,6 +212,7 @@ public class HttpSession
 		HttpHeader using = (header == null) ? new HttpHeader(HttpMethod.POST, headerPath, createHeaderValues(HttpMethod.POST)) : header;
 		createRequest(using).sendWithBody(body);
 		this.lastResponse = new HttpResponse(this.lastRequest.getResponse());
+		onSendComplete();
 	}
 	
 	/**
@@ -200,6 +225,7 @@ public class HttpSession
 	{
 		this.header = header;
 		send(body);
+		onSendComplete();
 	}
 	
 	/**
@@ -211,6 +237,7 @@ public class HttpSession
 	{
 		this.header = header;
 		send();
+		onSendComplete();
 	}
 	
 	/**
@@ -231,6 +258,28 @@ public class HttpSession
 				: createRequest(header)).requestToString(body);
 	}
 	
+	private boolean usingOnSendComplete = false;
+	private void onSendComplete()
+	{
+		if (onComplete != null && !usingOnSendComplete)
+		{
+			usingOnSendComplete = true;
+			onComplete.run(this);
+		}
+		onComplete = null;
+		usingOnSendComplete = false;
+	}
+	
+	public boolean isUsingOnSendComplete()
+	{
+		return this.usingOnSendComplete;
+	}
+	
+	public void setOnSendComplete(SessionSendComplete onComplete)
+	{
+		this.onComplete = onComplete;
+	}
+	
 	/**
 	 * The last HttpResponse received.
 	 * @return Stored HttpResponse
@@ -238,6 +287,16 @@ public class HttpSession
 	public HttpResponse getLastResponse()
 	{
 		return this.lastResponse;
+	}
+	
+	public HttpRequest getLastRequest()
+	{
+		return this.lastRequest;
+	}
+	
+	public String getHeaderPath()
+	{
+		return this.headerPath;
 	}
 	
 }

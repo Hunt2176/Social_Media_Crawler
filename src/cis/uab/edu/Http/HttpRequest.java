@@ -173,6 +173,11 @@ public class HttpRequest
 		return header.getHttpHeader() + body;
 	}
 	
+	public HttpHeader getHttpHeader()
+	{
+		return this.header;
+	}
+	
 	
 	/**
 	 * Sets the request to print out the response received once the socket is closed

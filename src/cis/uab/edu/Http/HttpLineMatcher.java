@@ -91,7 +91,7 @@ public abstract class HttpLineMatcher
 		{
 			case regex: if (toCheck.matches(regex)) onMatch(toCheck);
 				break;
-			case contains: if (toCheck.contains(regex)) onMatch(toCheck);
+			case contains: if (toCheck.toLowerCase().contains(regex.toLowerCase())) onMatch(toCheck);
 				break;
 		}
 		

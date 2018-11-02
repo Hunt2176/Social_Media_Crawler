@@ -11,26 +11,78 @@ import java.util.regex.Pattern;
 
 public class Main
 {
-	static String email = "lforbus@uab.edu";
-	static String password = "w7BR2PgZ";
-	static Integer graphID = 1;
+	private static String address = "";
+	private static int port = -1;
+	private static String email = "";
+	private static String password = "";
+	private static Integer graphID = null;
 	
-	static HttpSession session = new HttpSession("odin.cs.uab.edu", 3001, new HttpHeader(HttpMethod.POST, "/oauth/token"));
-	static ArrayList<String> flags = new ArrayList<>();
-	static IdQueue queue = new IdQueue();
+	private static HttpSession session = null;
+	private static ArrayList<String> flags = new ArrayList<>();
+	private static IdQueue queue = new IdQueue();
+	private static JsonMapper loginMap = new JsonMapper();
 	
 	public static void main(String[] args) throws Exception
 	{
+		if (args.length == 5)
+		{
+			for (int index = 0; index < args.length; index++)
+			{
+				try
+				{
+					switch (index)
+					{
+						case 0: address = args[0];
+							break;
+						case 1: port = Integer.valueOf(args[1]);
+							break;
+						case 2: email = args[2]; if (!email.contains("@uab.edu")) throw new Exception();
+							break;
+						case 3: password = args[3];
+							break;
+						case 4: graphID = Integer.valueOf(args[4]);
+							break;
+						default: throw new Exception("Invalid Parameter: " + args[index]);
+					}
+				} catch (Exception error)
+				{
+					String item = "";
+					switch (index)
+					{
+						case 0: item = "address";
+							break;
+						case 1: item = "port number";
+							break;
+						case 2: item = "email";
+							break;
+						case 3: item = "password";
+							break;
+						case 4: item = "Graph ID";
+							break;
+					}
+					System.err.println(args[index] + " is not a valid " + item + ".");
+					System.exit(1);
+				}
+			}
+		}
+		else
+		{
+			System.err.println("Too few arguments.");
+			System.exit(1);
+		}
+		
+		session = new HttpSession(address, port, new HttpHeader(HttpMethod.POST, "/oauth/token"));
+		
 		session.addHeaderValue("accept", "application/json");
 		session.addHeaderValue("connection", "close");
 		session.addMethodHeader(HttpMethod.POST, "Content-Type", "application/json");
 		
-		session.addMatcher(HttpLineMatcher.containMatcher("token\":", (line) ->
+		session.addMatcher(HttpLineMatcher.containMatcher("token", (line) ->
 		{
 			String token = line.split("_token\":\"")[1].split("\",")[0];
 			session.addHeaderValue("authorization", "bearer " + token);
 		}));
-		session.addMatcher(HttpLineMatcher.containMatcher("SECRET FLAG:", (line) ->
+		session.addMatcher(HttpLineMatcher.containMatcher("SECRET FLAG", (line) ->
 		{
 			String flag = line.split("\"SECRET FLAG: ")[1].split("\"},")[0];
 			Pattern pattern = Pattern.compile("(\\w|\\d)+");
@@ -39,18 +91,35 @@ public class Main
 			{
 				flags.add(matcher.group(0));
 			}
+		}));
+		session.addMatcher(HttpLineMatcher.regexMatcher("HTTP/1.1 \\d+ OK", (line) ->
+		{
+			if (line.contains("500"))
+			{
+				System.err.println("Unrecoverable server response: 500");
+				System.exit(1);
+			}
 			
 		}));
+		session.addMatcher(HttpLineMatcher.containMatcher("Unauthorized", (line) -> {
+			try
+			{
+				if (!session.isUsingOnSendComplete()) throw new Exception("Failed Authorization");
+				login(true);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}));
 		
-		JsonMapper mapper = new JsonMapper();
-		mapper.putString("email", email);
-		mapper.putString("password", password);
-		mapper.putString("grant_type", "password");
+		loginMap.putString("email", email);
+		loginMap.putString("password", password);
+		loginMap.putString("grant_type", "password");
 		
-		session.send(mapper.toString());
-		
+		login(false);
 		visit(null);
-		Integer next = null;
+		Integer next;
 		while ((next = queue.nextUnchecked()) != null)
 		{
 			visit(next.toString());
@@ -60,7 +129,7 @@ public class Main
 		flags.forEach(System.out::println);
 	}
 	
-	static void visit(String id) throws Exception
+	private static void visit(String id) throws Exception
 	{
 		if (id != null)
 		{
@@ -113,7 +182,7 @@ public class Main
 		}
 	}
 	
-	static boolean hasChallenge(String id) throws Exception
+	private static boolean hasChallenge(String id) throws Exception
 	{
 		if (session.getLastResponse().getResponseCode() == 302)
 		{
@@ -124,7 +193,7 @@ public class Main
 		return false;
 	}
 	
-	static void challenge() throws Exception
+	private static void challenge() throws Exception
 	{
 		session.printResponse(true);
 		session.setHeaderPath("/api/v1/challenges/");
@@ -153,7 +222,7 @@ public class Main
 				session.send(mapper.toString());
 				if (session.getLastResponse().getJson().contains("failure"))
 				{
-					int actual = challengeBruteForce((Integer) mapper.map.get("distance"));
+					int actual = challengeBruteForce();
 					System.err.println("Result Found: Tested: " + mapper.map.get("distance") + " - Actual: " + actual + "\n");
 				}
 				else
@@ -171,7 +240,37 @@ public class Main
 		
 	}
 	
-	static int challengeBruteForce(int original) throws Exception
+	private static boolean login(boolean relog) throws Exception
+	{
+		if (relog)
+		{
+			session.setOnSendComplete((it) ->
+			{
+				HttpRequest lastRequest = it.getLastRequest();
+				try
+				{
+					session.setHeaderPath("/oauth/token");
+					session.send(loginMap.toString());
+					it.send(it.getLastRequest().getHttpHeader());
+				} catch (Exception err)
+				{
+					System.err.println("Unable to reauthorize");
+					err.printStackTrace();
+					System.exit(1);
+				}
+				
+			});
+			return true;
+		}
+		else
+		{
+			session.setHeaderPath("/oauth/token");
+			session.send(loginMap.toString());
+			return (session.getLastResponse().getResponseCode() == 200);
+		}
+	}
+	
+	private static int challengeBruteForce() throws Exception
 	{
 		session.printResponse(false);
 		int count = -1;
@@ -184,9 +283,7 @@ public class Main
 			{
 				count = (count == -1) ? 1 : count + 1;
 			}
-			
 		}
-		
 		return count;
 	}
 	
