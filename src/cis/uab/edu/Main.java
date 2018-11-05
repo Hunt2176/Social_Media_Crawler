@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-//"email": "lforbus@uab.edu"
-//"password": "w7BR2PgZ"
-
 public class Main
 {
 	private static String address = "";
@@ -90,6 +87,7 @@ public class Main
 			if (matcher.find())
 			{
 				flags.add(matcher.group(0));
+				System.out.println(matcher.group(0));
 			}
 		}));
 		session.addMatcher(HttpLineMatcher.regexMatcher("HTTP/1.1 \\d+ OK", (line) ->
@@ -120,13 +118,11 @@ public class Main
 		login(false);
 		visit(null);
 		Integer next;
-		while ((next = queue.nextUnchecked()) != null)
+		while ((next = queue.nextUnchecked()) != null && flags.size() < 5)
 		{
 			visit(next.toString());
 			queue.setToChecked(next);
 		}
-		System.out.println("\nFlags:");
-		flags.forEach(System.out::println);
 	}
 	
 	private static void visit(String id) throws Exception
@@ -195,7 +191,6 @@ public class Main
 	
 	private static void challenge() throws Exception
 	{
-		session.printResponse(true);
 		session.setHeaderPath("/api/v1/challenges/");
 		session.send();
 		if (session.getLastResponse().getJson() != null)
@@ -207,13 +202,13 @@ public class Main
 				Profile to = queue.getProfile(Integer.valueOf(json.split(",")[0]));
 				Profile from = queue.getProfile(Integer.valueOf(json.split("\"from\":")[1].split(",")[0]));
 				JsonMapper mapper = new JsonMapper();
-				PathFinder finder = new PathFinder();
 				
 				int result;
 				if (to == null || from == null)
 				{
 					result = -1;
-				} else
+				}
+				else
 				{
 					result = queue.Dijkstra(from, to);
 				}
@@ -222,12 +217,10 @@ public class Main
 				session.send(mapper.toString());
 				if (session.getLastResponse().getJson().contains("failure"))
 				{
-					int actual = challengeBruteForce();
-					System.err.println("Result Found: Tested: " + mapper.map.get("distance") + " - Actual: " + actual + "\n");
-				}
-				else
-				{
-					System.out.println("Result " + mapper.map.get("distance"));
+					//Call for getting bruteforce on error
+					challengeBruteForce();
+//					System.err.println("Incorrect response was given for challenge. Cannot Recover. Exiting.");
+//					System.exit(1);
 				}
 				
 			} catch (NumberFormatException error)
@@ -272,7 +265,6 @@ public class Main
 	
 	private static int challengeBruteForce() throws Exception
 	{
-		session.printResponse(false);
 		int count = -1;
 		while (session.getLastResponse().getJson() != null && session.getLastResponse().getJson().contains("failure"))
 		{
